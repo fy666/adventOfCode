@@ -6,6 +6,8 @@ import time
 import cvxpy as cp
 from numpy.linalg import svd, lstsq
 
+# TODO: use scipy milp https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.milp.html
+
 
 def push_buttons(buttons, state):
     new_state = list(state)
