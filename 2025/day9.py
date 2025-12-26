@@ -2,43 +2,19 @@ import numpy as np
 import argparse
 import re
 from collections import defaultdict
-
-
-def is_included(a, b, x_vals, y_vals):
-    if a[0] < b[0]:
-        x1, y1 = a
-        x2, y2 = b
-    else:
-        x1, y1 = b
-        x2, y2 = a
-
-    # case 1
-    if y2 > y1:
-        if not (np.any(np.array(y_vals[y1]) >= x2)):
-            return False
-        if not (np.any(np.array(y_vals[y2]) <= x1)):
-            return False
-        if not (np.any(np.array(x_vals[x1]) >= y2)):
-            return False
-        if not (np.any(np.array(x_vals[x2]) <= y1)):
-            return False
-        return True
-    else:
-        if not (np.any(np.array(y_vals[y1]) >= x2)):
-            return False
-        if not (np.any(np.array(y_vals[y2]) <= x1)):
-            return False
-        if not (np.any(np.array(x_vals[x1]) <= y2)):
-            return False
-        if not (np.any(np.array(x_vals[x2]) >= y1)):
-            return False
-        return True
+import shapely.plotting
+from shapely.geometry import Polygon
+import matplotlib.pyplot as plt
 
 
 def get_area(a, b):
-    dx = abs(a[0] - b[0] + 1)
-    dy = abs(a[1] - b[1] + 1)
+    dx = abs(a[0] - b[0]) + 1
+    dy = abs(a[1] - b[1]) + 1
     return dx * dy
+
+
+def get_poly(a, b):
+    return Polygon.from_bounds(min(a[0], b[0]), min(a[1], b[1]), max(a[0], b[0]), max(a[1], b[1]))
 
 
 if __name__ == "__main__":
@@ -56,8 +32,13 @@ if __name__ == "__main__":
         filename = f"./data/input{day}.txt"
 
     with open(filename, "r") as f:
-        d = [list(map(int, x.split(","))) for x in f.readlines()]
-    print(d)
+        d = [tuple(map(int, x.split(","))) for x in f.readlines()]
+
+    polygon1 = Polygon(d)
+
+    # shapely.plotting.plot_polygon(polygon1)
+    # plt.draw()
+    # plt.show()
 
     x_vals = defaultdict(list)
     y_vals = defaultdict(list)
@@ -70,8 +51,11 @@ if __name__ == "__main__":
     for ix in range(len(d)):
         for iy in range(ix + 1, len(d)):
             area = get_area(d[ix], d[iy])
+            if area == 0:
+                continue
             areas.append(area)
-            if is_included(d[ix], d[iy], x_vals, y_vals):
+            p = get_poly(d[ix], d[iy])
+            if polygon1.contains(p):
                 continuous_areas.append(area)
 
     print(f"Part 1 max area is {max(areas)}")
